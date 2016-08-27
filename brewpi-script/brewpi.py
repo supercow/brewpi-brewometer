@@ -21,6 +21,9 @@ import sys
 from BrewPiUtil import printStdErr
 from BrewPiUtil import logMessage
 
+import Brewometer
+import thread
+
 # Check needed software dependencies to nudge users to fix their setup
 if sys.version_info < (2, 7):
     printStdErr("Sorry, requires Python 2.7.")
@@ -37,9 +40,6 @@ import traceback
 import urllib
 from distutils.version import LooseVersion
 from serial import SerialException
-
-import Brewometer
-import thread
 
 # load non standard packages, exit when they are not installed
 try:
@@ -421,7 +421,7 @@ startBeer(config['beerName'])
 outputTemperature = True
 
 # Initialise brewometer and start monitoring. Use 300 Secs averaging of values to smooth out noise.
-# Use a median filter window of 10000 to further smooth out noise. This value effectively disables the 'moving average' functionality, as 300 secs will only generate about 360-380 readings. So a simple median will be applied across the entire set. This means that a true change in temperature/SG will take at least 2.5 mins to be observed.
+# Use a median filter window of 10000 to further smooth out noise. This value effectively disables the 'moving average' functionality, as 300 secs will only generate about 360-380 readings. So a simple median will be applied across the
 # (Brewometers generate approx 1.2 readings per sec)
 brewometer = Brewometer.BrewometerManager()
 brewometer.loadSettings()
@@ -459,6 +459,18 @@ while run:
         if lastDay != day:
             logMessage("Notification: New day, creating new JSON file.")
             setFiles()
+
+        ##Retrieve the current brewometer values
+        for colour in Brewometer.BREWOMETER_COLOURS:
+            brewometerValue = brewometer.getValue(colour)
+
+            if brewometerValue is not None:
+                prevTempJson[colour + 'Temp'] = round(brewometerValue.temperature, 2)
+                prevTempJson[colour + 'SG'] = brewometerValue.gravity
+            else:
+                prevTempJson[colour + 'Temp'] = None
+                prevTempJson[colour + 'SG'] = None
+
 
     # Wait for incoming socket connections.
     # When nothing is received, socket.timeout will be raised after
@@ -764,19 +776,7 @@ while run:
                         # copy/rename keys
                         for key in newData:
                             prevTempJson[renameTempKey(key)] = newData[key]
-                        
-                        ##Retrieve the current brewometer values
-                        for colour in Brewometer.BREWOMETER_COLOURS:
-                            brewometerValue = brewometer.getValue(colour)
 
-                            if brewometerValue is not None:
-                                prevTempJson[colour + 'Temp'] = round(brewometerValue.temperature, 2)
-                                prevTempJson[colour + 'SG'] = brewometerValue.gravity
-                            else:
-                                prevTempJson[colour + 'Temp'] = None
-                                prevTempJson[colour + 'SG'] = None
-                    
-                    
                         newRow = prevTempJson
                         # add to JSON file
                         brewpiJson.addRow(localJsonFileName, newRow)
@@ -795,14 +795,13 @@ while run:
                                            json.dumps(newRow['FridgeAnn']) + ';' +
                                            json.dumps(newRow['State']) + ';' +
                                            json.dumps(newRow['RoomTemp']) + ';')
-                        
                             # Write out Brewometer Temp and SG Values
                             for colour in Brewometer.BREWOMETER_COLOURS:
                                 if prevTempJson.get(colour + 'Temp') is not None:
                                     lineToWrite += (json.dumps(prevTempJson[colour + 'Temp']) + ';' +
                                                 json.dumps(prevTempJson[colour + 'SG']) + ';')
-                        
-                            lineToWrite += '\n'
+
+                                lineToWrite += '\n'
                             csvFile.write(lineToWrite)
                         except KeyError, e:
                             logMessage("KeyError in line from controller: %s" % str(e))
@@ -871,9 +870,8 @@ while run:
 if bg_ser:
     bg_ser.stop()
 
-#Stop monitoring the brewometer
 if brewometer:
-	brewometer.stop()
+  brewometer.stop()
 
 if ser:
     if ser.isOpen():

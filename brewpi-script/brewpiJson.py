@@ -120,7 +120,7 @@ def addRow(jsonFileName, row):
 
   #Write Brewometer values
 
-  for colour in Brewometer.BREWOMETER_COLOURS:
+	for colour in Brewometer.BREWOMETER_COLOURS:
 		jsonFile.write(",")
 		if row.get(colour + 'Temp', None) is None:
 			jsonFile.write("null,")

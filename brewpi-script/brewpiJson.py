@@ -121,15 +121,15 @@ def addRow(jsonFileName, row):
   #Write Brewometer values
 
   for colour in Brewometer.BREWOMETER_COLOURS:
-    jsonFile.write(",")
-    if row.get(colour + 'Temp', None) is None:
-      jsonFile.write("null,")
-    else:
-      jsonFile.write("{\"v\":" + str(row[colour + 'Temp']) + "},")
-    if row.get(colour + 'SG', None) is None:
-      jsonFile.write("null")
-    else:
-      jsonFile.write("{\"v\":" + str(row[colour + 'SG']) + "}")
+		jsonFile.write(",")
+		if row.get(colour + 'Temp', None) is None:
+			jsonFile.write("null,")
+		else:
+			jsonFile.write("{\"v\":" + str(row[colour + 'Temp']) + "},")
+		if row.get(colour + 'SG', None) is None:
+			jsonFile.write("null")
+		else:
+			jsonFile.write("{\"v\":" + str(row[colour + 'SG']) + "}")
 
 	# rewrite end of json file
 	jsonFile.write("]}]}")

@@ -22,7 +22,8 @@ import csv
 import functools
 import ConfigParser
 
-BREWOMETER_COLOURS = [ 'Red', 'Green', 'Black', 'Purple', 'Orange', 'Blue', 'Yellow', 'Pink' ]
+#BREWOMETER_COLOURS = [ 'Red', 'Green', 'Black', 'Purple', 'Orange', 'Blue', 'Yellow', 'Pink' ]
+BREWOMETER_COLOURS = [ 'Black' ]
 
 #Default time in seconds to wait before checking config files to see if calibration data has changed.
 DATA_REFRESH_WINDOW = 60
